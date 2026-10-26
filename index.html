@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#075985">
+<title>تقرير البلازما الشهري لمشفى قطنا</title>
+<link rel="manifest" href="manifest.json">
+<style>
+:root{--blue:#075985;--blue2:#0e7490;--bg:#f1f5f9;--ink:#0f172a;--muted:#64748b;--line:#cbd5e1;--green:#15803d;--red:#b91c1c}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Tahoma,Arial,sans-serif;color:var(--ink);font-size:16px}
+header{background:linear-gradient(135deg,var(--blue),var(--blue2));color:white;padding:22px 16px;text-align:center}
+header h1{font-size:clamp(24px,5vw,34px);margin:0 0 8px;line-height:1.5}header p{margin:0;font-size:15px}
+main{max-width:1050px;margin:18px auto;padding:0 12px 30px}
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:16px;margin-bottom:15px;box-shadow:0 3px 12px #0f172a0a}
+h2{font-size:21px;margin:0 0 14px;color:var(--blue)}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px}
+label{display:block;font-weight:700;margin-bottom:6px}
+input,select,button{font:inherit}
+input,select{width:100%;padding:11px;border:1px solid var(--line);border-radius:9px;background:#fff;min-height:44px}
+button{border:0;border-radius:10px;padding:11px 15px;font-weight:700;cursor:pointer;min-height:44px}
+.primary{background:var(--blue);color:#fff}.secondary{background:#e0f2fe;color:#075985}.danger{background:#fee2e2;color:#991b1b}.neutral{background:#e2e8f0;color:#0f172a}.success{background:#dcfce7;color:#166534}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
+.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:610px}th,td{border:1px solid var(--line);padding:10px;text-align:center}th{background:#e0f2fe;color:#0c4a6e;font-size:16px}td{font-size:16px}
+.total{font-size:22px;font-weight:800;color:var(--blue);background:#f0f9ff;padding:14px;border-radius:10px;margin-top:12px}
+.small{font-size:13px;color:var(--muted);line-height:1.7}.empty{text-align:center;color:var(--muted);padding:22px}
+.archive-item{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--line);padding:12px;border-radius:10px;margin:8px 0;flex-wrap:wrap}
+.archive-title{font-weight:800}.archive-sub{font-size:13px;color:var(--muted);margin-top:4px}
+#notice{margin-top:10px;color:var(--green);font-weight:700}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:10px}
+@media(max-width:600px){.card{padding:13px}header{padding:18px 12px}.actions button{flex:1 1 140px}}
+@media print{
+ body{background:#fff;font-size:14pt}header{background:#fff!important;color:#000;padding:0 0 12px;border-bottom:2px solid #000}
+ header h1{font-size:25pt}header p{font-size:12pt}main{max-width:none;margin:0;padding:0}.no-print, .no-print *{display:none!important}
+ .card{box-shadow:none;border:0;padding:8px 0;margin:0 0 10px}h2{font-size:17pt;color:#000}
+ table{min-width:0;width:100%;font-size:14pt}th,td{padding:8px;border:1px solid #333;font-size:13pt}
+ th{background:#eee!important;color:#000}.total{font-size:18pt;color:#000;background:#fff;border:1px solid #333}
+ #printMonth{font-size:14pt;font-weight:bold;margin:8px 0}.print-footer{display:block!important;margin-top:30px;font-size:12pt}
+ @page{size:A4 portrait;margin:14mm}
+}
+.print-footer{display:none}
+</style>
+</head>
+<body>
+<header>
+  <h1 id="mainTitle">تقرير البلازما الشهري لمشفى قطنا الوطني</h1>
+  <p>سجل وحدات البلازما حسب الزمرة الدموية وتاريخ الصلاحية</p>
+</header>
+<main>
+  <section class="card no-print">
+    <h2>إعداد التقرير</h2>
+    <div class="row">
+      <div><label for="month">الشهر</label><input type="month" id="month"></div>
+      <div><label for="reportNote">ملاحظات (اختياري)</label><input id="reportNote" placeholder="مثلاً: رصيد نهاية الشهر"></div>
+    </div>
+    <div class="actions">
+      <button class="primary" id="saveBtn">حفظ التقرير</button>
+      <button class="secondary" id="printBtn">طباعة التقرير / حفظ PDF</button>
+      <button class="neutral" id="newBtn">فتح / إنشاء تقرير الشهر المحدد</button>
+    </div>
+    <div id="notice" role="status"></div>
+    <p class="small">كل شهر محفوظ بشكل مستقل. عند اختيار شهر سابق يمكنك فتح تقريره وتعديله دون تغيير بقية الأشهر. احفظ نسخة احتياطية دورياً من زر التصدير.</p>
+  </section>
+
+  <section class="card no-print">
+    <h2>إضافة مجموعة بلازما</h2>
+    <div class="row">
+      <div><label for="bloodGroup">الزمرة الدموية</label>
+        <select id="bloodGroup">
+          <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+          <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+        </select>
+      </div>
+      <div><label for="units">عدد الوحدات</label><input id="units" type="number" min="1" step="1" value="1"></div>
+      <div><label for="expiry">تاريخ الصلاحية</label><input id="expiry" type="date"></div>
+      <div><label for="batchNote">ملاحظة المجموعة (اختياري)</label><input id="batchNote" placeholder="رقم دفعة أو ملاحظة"></div>
+    </div>
+    <div class="actions"><button class="primary" id="addBtn">+ إضافة إلى الجدول</button></div>
+  </section>
+
+  <section class="card" id="reportArea">
+    <h2>بيانات التقرير</h2>
+    <div id="printMonth"></div>
+    <div id="tableHost" class="table-wrap"></div>
+    <div class="total" id="totalUnits">إجمالي الوحدات: 0</div>
+    <p id="shownNote" class="small"></p>
+    <div class="print-footer">مشفى قطنا الوطني — بنك الدم</div>
+  </section>
+
+  <section class="card no-print">
+    <h2>أرشيف التقارير الشهرية</h2>
+    <div class="actions">
+      <button class="secondary" id="exportBtn">تصدير نسخة احتياطية</button>
+      <button class="secondary" id="importBtn">استيراد نسخة احتياطية</button>
+      <input id="importFile" type="file" accept="application/json,.json" hidden>
+    </div>
+    <div id="archiveHost"></div>
+  </section>
+  <footer>تُحفظ البيانات محلياً على هذا الجهاز والمتصفح. امسح بيانات المتصفح أو تغيّر الجهاز قد يؤدي لفقدانها؛ استخدم النسخة الاحتياطية.</footer>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const STORAGE_KEY = 'qatana_plasma_monthly_reports_v1';
+let reports = {};
+let currentMonth = '';
+let entries = [];
+let note = '';
+
+function monthNow(){return new Date().toISOString().slice(0,7)}
+function monthLabel(m){
+ if(!m)return '';
+ const [y,mo]=m.split('-').map(Number);
+ return new Date(y,mo-1,1).toLocaleDateString('ar-SY',{month:'long',year:'numeric'});
+}
+function monthTitle(m){
+ if(!m)return '';
+ const [y,mo]=m.split('-');
+ return String(Number(mo))+' / '+y;
+}
+function readStore(){
+ try{reports=JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}');}
+ catch(e){reports={};}
+}
+function persist(){localStorage.setItem(STORAGE_KEY,JSON.stringify(reports));}
+function setNotice(t, bad=false){$('notice').textContent=t;$('notice').style.color=bad?'#b91c1c':'#15803d';}
+function saveCurrent(silent=false){
+ if(!currentMonth)return;
+ reports[currentMonth]={month:currentMonth,entries:entries,note:note,updatedAt:new Date().toISOString()};
+ persist();
+ renderArchive();
+ if(!silent)setNotice('تم حفظ تقرير '+monthLabel(currentMonth)+' بنجاح.');
+}
+function loadMonth(m){
+ if(!m)return;
+ if(currentMonth && currentMonth!==m) saveCurrent(true);
+ currentMonth=m;
+ const r=reports[m];
+ entries=r&&Array.isArray(r.entries)?r.entries.map(x=>({...x})):[];
+ note=r?.note||'';
+ $('month').value=m;$('reportNote').value=note;
+ renderTable();setNotice(r?'تم فتح التقرير المحفوظ.':'تم إنشاء تقرير جديد لهذا الشهر.');
+}
+function renderTable(){
+ $('mainTitle').textContent='تقرير البلازما الشهري لشهر '+monthTitle(currentMonth)+' لمشفى قطنا الوطني';
+ document.title=$('mainTitle').textContent;
+ $('printMonth').textContent='الشهر: '+monthLabel(currentMonth);
+ $('shownNote').textContent=note?'ملاحظات: '+note:'';
+ if(!entries.length){$('tableHost').innerHTML='<div class="empty">لا توجد مجموعات مضافة لهذا التقرير بعد.</div>';}
+ else{
+  const rows=entries.map((e,i)=>`<tr><td>${i+1}</td><td><strong>${esc(e.group)}</strong></td><td>${Number(e.units)||0}</td><td>${esc(e.expiry||'—')}</td><td>${esc(e.note||'—')}</td><td class="no-print"><button class="secondary" onclick="editEntry(${i})">تعديل</button> <button class="danger" onclick="deleteEntry(${i})">حذف</button></td></tr>`).join('');
+  $('tableHost').innerHTML=`<table><thead><tr><th>م</th><th>الزمرة</th><th>عدد الوحدات</th><th>تاريخ الصلاحية</th><th>ملاحظات</th><th class="no-print">إجراءات</th></tr></thead><tbody>${rows}</tbody></table>`;
+ }
+ $('totalUnits').textContent='إجمالي وحدات البلازما: '+entries.reduce((s,e)=>s+(Number(e.units)||0),0);
+}
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function renderArchive(){
+ const keys=Object.keys(reports).sort().reverse();
+ if(!keys.length){$('archiveHost').innerHTML='<div class="empty">لا توجد تقارير محفوظة بعد.</div>';return;}
+ $('archiveHost').innerHTML=keys.map(m=>{
+  const r=reports[m],total=(r.entries||[]).reduce((s,e)=>s+(Number(e.units)||0),0);
+  return `<div class="archive-item"><div><div class="archive-title">${esc(monthLabel(m))}${m===currentMonth?' — التقرير المفتوح':''}</div><div class="archive-sub">${(r.entries||[]).length} مجموعة · ${total} وحدة</div></div><div class="actions" style="margin:0"><button class="secondary" onclick="openArchive('${m}')">فتح / تعديل</button><button class="danger" onclick="deleteReport('${m}')">حذف التقرير</button></div></div>`;
+ }).join('');
+}
+function addEntry(){
+ const group=$('bloodGroup').value, units=parseInt($('units').value,10), expiry=$('expiry').value, batchNote=$('batchNote').value.trim();
+ if(!Number.isInteger(units)||units<1){alert('أدخل عدد وحدات صحيحاً لا يقل عن 1.');return;}
+ if(!expiry){if(!confirm('لم تدخل تاريخ الصلاحية. هل تريد المتابعة؟'))return;}
+ entries.push({group,units,expiry,note:batchNote});
+ $('units').value=1;$('batchNote').value='';
+ renderTable();saveCurrent(true);setNotice('تمت إضافة المجموعة وحفظ التقرير.');
+}
+function editEntry(i){
+ const e=entries[i];if(!e)return;
+ const group=prompt('الزمرة الدموية (A+, A-, B+, B-, AB+, AB-, O+, O-):',e.group);if(group===null)return;
+ const valid=['A+','A-','B+','B-','AB+','AB-','O+','O-'];
+ if(!valid.includes(group.trim().toUpperCase())){alert('الزمرة غير صحيحة.');return;}
+ const units=prompt('عدد الوحدات:',e.units);if(units===null)return;
+ if(!Number.isInteger(Number(units))||Number(units)<1){alert('عدد الوحدات غير صحيح.');return;}
+ const expiry=prompt('تاريخ الصلاحية بصيغة YYYY-MM-DD (اتركه فارغاً إذا غير معروف):',e.expiry||'');if(expiry===null)return;
+ const batchNote=prompt('ملاحظة المجموعة:',e.note||'');if(batchNote===null)return;
+ entries[i]={group:group.trim().toUpperCase(),units:Number(units),expiry,note:batchNote.trim()};
+ renderTable();saveCurrent(true);setNotice('تم تعديل المجموعة وحفظ التقرير.');
+}
+function deleteEntry(i){if(confirm('هل تريد حذف هذه المجموعة؟')){entries.splice(i,1);renderTable();saveCurrent(true);setNotice('تم حذف المجموعة.');}}
+function openArchive(m){saveCurrent(true);loadMonth(m);window.scrollTo({top:0,behavior:'smooth'});}
+function deleteReport(m){
+ if(!confirm('حذف تقرير '+monthLabel(m)+' نهائياً؟ لا يمكن التراجع عن هذا الإجراء.'))return;
+ delete reports[m];persist();
+ if(currentMonth===m){entries=[];note='';currentMonth=m;$('reportNote').value='';renderTable();setNotice('تم حذف التقرير. يمكنك إنشاءه مجدداً عند الحاجة.');}
+ renderArchive();
+}
+$('month').value=monthNow();
+$('month').addEventListener('change',e=>loadMonth(e.target.value));
+$('reportNote').addEventListener('change',e=>{note=e.target.value;saveCurrent(true);renderTable();});
+$('addBtn').addEventListener('click',addEntry);
+$('saveBtn').addEventListener('click',()=>{note=$('reportNote').value.trim();saveCurrent();});
+$('newBtn').addEventListener('click',()=>loadMonth($('month').value));
+$('printBtn').addEventListener('click',()=>{note=$('reportNote').value.trim();saveCurrent(true);window.print();});
+$('exportBtn').addEventListener('click',()=>{
+ saveCurrent(true);
+ const blob=new Blob([JSON.stringify({app:'تقرير البلازما الشهري لمشفى قطنا',version:1,reports},null,2)],{type:'application/json'});
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='نسخة-احتياطية-تقارير-البلازما.json';a.click();URL.revokeObjectURL(a.href);
+});
+$('importBtn').addEventListener('click',()=>$('importFile').click());
+$('importFile').addEventListener('change',async e=>{
+ const f=e.target.files[0];if(!f)return;
+ try{
+  const data=JSON.parse(await f.text());const incoming=data.reports||data;
+  if(!incoming||typeof incoming!=='object')throw new Error();
+  if(!confirm('سيتم دمج التقارير المستوردة مع التقارير الحالية، وقد تستبدل التقارير ذات الشهر نفسه. المتابعة؟'))return;
+  reports={...reports,...incoming};persist();loadMonth(currentMonth||monthNow());renderArchive();setNotice('تم استيراد النسخة الاحتياطية بنجاح.');
+ }catch(err){alert('تعذر قراءة الملف. تأكد أنه نسخة احتياطية صحيحة من التطبيق.');}
+ finally{$('importFile').value='';}
+});
+readStore();currentMonth=monthNow();loadMonth(currentMonth);renderArchive();
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}
+</script>
+</body>
+</html>

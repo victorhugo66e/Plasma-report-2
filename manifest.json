@@ -1,0 +1,6 @@
+{
+  "name": "تقرير البلازما الشهري لمشفى قطنا الوطني",
+  "short_name": "تقرير البلازما",
+  "lang": "ar", "dir": "rtl", "start_url": "./index.html", "display": "standalone",
+  "background_color": "#f1f5f9", "theme_color": "#075985"
+}
